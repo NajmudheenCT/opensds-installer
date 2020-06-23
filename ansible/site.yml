@@ -34,8 +34,10 @@
   tasks:
     - import_role:
         name: common
+      tags: common
     - import_role:
         name: auth-installer
+  tags: keystone
 
 - name: Deploy OpenSDS Hotpot-installer
   hosts: controllers
@@ -51,12 +53,15 @@
   tasks:
     - import_role:
         name: common
+      when: common_role_done is not defined
     - import_role:
         name: osdsdb
+      tags: etcd
     - import_role:
         name: hotpot-installer
       when:
         - deploy_project != "gelato"
+  tags: hotpot
 
 - name: Deploy Dock
   hosts: docks
@@ -66,15 +71,17 @@
     - group_vars/hotpot.yml
     - group_vars/osdsdb.yml
     - group_vars/osdsdock.yml
-  gather_facts: false
+  gather_facts: true
   become: True
   tasks:
     - import_role:
         name: common
+      when: common_role_done is not defined
     - import_role:
         name: osdsdock
       when:
         - deploy_project != "gelato"
+  tags: dock
 
 - name: Install Gelato
   hosts: controllers
@@ -89,10 +96,12 @@
   tasks:
     - import_role:
         name: common
+      when: common_role_done is not defined
     - import_role:
         name: gelato-installer
       when:
         - deploy_project != "hotpot"
+  tags: gelato
 
 - name: Install Sushi
   hosts: controllers
@@ -107,10 +116,12 @@
   tasks:
     - import_role:
         name: common
+      when: common_role_done is not defined
     - import_role:
         name: sushi-installer
       when:
         - sushi_plugin_type != "hotpot_only"
+  tags: sushi
 
 - name: deploy dashboard
   hosts: controllers
@@ -123,20 +134,23 @@
   tasks:
     - import_role:
         name: dashboard-installer
+  tags: dashboard
 
 - name: deploy tools for telemetry
   hosts: controllers
   remote_user: root
   vars_files:
+    - group_vars/common.yml
+    - group_vars/hotpot.yml
     - group_vars/telemetry.yml
   gather_facts: false
   become: True
   tasks:
     - import_role:
         name: telemetry-installer
-      tags: telemetry_tag
       when:
         - enable_telemetry_tools == true
+  tags: telemetry
 
 - name: Install Orchestration Manager
   hosts: controllers
@@ -149,6 +163,21 @@
   tasks:
     - import_role:
         name: orchestration-installer
-      tags: orchestration_tag
       when:
         - enable_orchestration == true
+  tags: orchestration
+
+- name: Install SIM
+  hosts: controllers
+  remote_user: root
+  vars_files:
+    - group_vars/common.yml
+    - group_vars/sim.yml
+  gather_facts: false
+  become: True
+  tasks:
+    - import_role:
+        name: sim-installer
+      when:
+        - enable_sim == true
+  tags: sim

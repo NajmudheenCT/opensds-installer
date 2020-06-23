@@ -28,6 +28,7 @@
     - group_vars/sushi.yml
     - group_vars/dashboard.yml
     - group_vars/orchestration.yml
+    - group_vars/sim.yml
   gather_facts: false
   become: True
   tasks:
@@ -38,12 +39,13 @@
   hosts: controllers
   remote_user: root
   vars_files:
+    - group_vars/common.yml
     - group_vars/telemetry.yml
   gather_facts: false
   become: True
   tasks:
     - import_role:
         name: telemetry-uninstaller
-      tags: telemetry_tag
       when:
         - enable_telemetry_tools == true
+  tags: telemetry

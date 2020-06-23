@@ -1,0 +1,5 @@
+base:
+  '*':
+    - salt
+    - opensds
+    - deepsea
